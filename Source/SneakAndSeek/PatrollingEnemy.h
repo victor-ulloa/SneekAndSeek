@@ -32,6 +32,8 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	float Speed;
+	UPROPERTY(EditAnywhere)
+	float RotationSpeed;
 
 	UPROPERTY(EditAnywhere)
 	TEnumAsByte<EPatrollingEnemyState> State;
@@ -49,6 +51,7 @@ private:
 	int currentPoint = -1;
 	void NextPoint();
 	AActor *PlayerActor;
+	AActor *CurrentTarget;
 
 	bool isPLayerInArea();
 };

@@ -46,11 +46,9 @@ void APatrollingEnemy::Tick(float DeltaTime)
 		}
 		if (!PatrolPoints.IsEmpty())
 		{
-			FVector Direction = PatrolPoints[currentPoint]->GetActorLocation() - GetActorLocation();
-			if (Direction.Size() < 50)
+			CurrentTarget = PatrolPoints[currentPoint];
+			if ((CurrentTarget->GetActorLocation() - GetActorLocation()).Size() < 50)
 				NextPoint();
-			Direction.Normalize();
-			SetActorLocation(GetActorLocation() + (Direction * Speed * DeltaTime));
 		}
 		break;
 
@@ -60,8 +58,7 @@ void APatrollingEnemy::Tick(float DeltaTime)
 			State = EPatrollingEnemyState::Patrolling;
 			break;
 		}
-
-		
+		CurrentTarget = PlayerActor;
 		break;
 
 	case EPatrollingEnemyState::Cooldown:
@@ -72,9 +69,16 @@ void APatrollingEnemy::Tick(float DeltaTime)
 		break;
 	}
 
-	if (isPLayerInArea())
+	if (CurrentTarget)
 	{
-		// change state
+		FVector Direction = CurrentTarget->GetActorLocation() - GetActorLocation();
+		Direction.Normalize();
+		SetActorLocation(GetActorLocation() + (Direction * Speed * DeltaTime));
+
+		FRotator PlayerRot = FRotationMatrix::MakeFromX(Direction).Rotator();
+		SetActorRotation(PlayerRot);
+		// TODO: FIX ROTATION SPEED
+		// SetActorRotation(PlayerRot * RotationSpeed * DeltaTime);
 	}
 }
 
