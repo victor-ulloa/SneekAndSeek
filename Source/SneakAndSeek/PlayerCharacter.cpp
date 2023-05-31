@@ -58,7 +58,10 @@ void APlayerCharacter::Move(const FInputActionValue &Value)
 		// GetCharacterMovement()->MaxWalkSpeed = bIsSprinting ? Speed * SprintMultiplier : Speed;
 		AddMovementInput(GetActorForwardVector(), DirectionalValue.Y * 100);
 		AddMovementInput(GetActorRightVector(), DirectionalValue.X * 100);
+
 	}
+		// ForwardValue = DirectionalValue.Y;
+		// RightValue = DirectionalValue.X;
 }
 
 void APlayerCharacter::Look(const FInputActionValue &Value)
