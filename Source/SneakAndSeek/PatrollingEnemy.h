@@ -34,6 +34,8 @@ protected:
 	float Speed;
 	UPROPERTY(EditAnywhere)
 	float RotationSpeed;
+	UPROPERTY(EditAnywhere)
+	float Cooldown;
 
 	UPROPERTY(EditAnywhere)
 	TEnumAsByte<EPatrollingEnemyState> State;
@@ -47,6 +49,10 @@ private:
 	void OnOverlapBegin(UPrimitiveComponent *OverlappedComp, AActor *OtherActor, UPrimitiveComponent *OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult &SweepResult);
 	UFUNCTION()
 	void OnOverlapEnd(UPrimitiveComponent *OverlappedComp, AActor *OtherActor, UPrimitiveComponent *OtherComp, int32 OtherBodyIndex);
+	UFUNCTION()
+	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector normalImpulse, const FHitResult& Hit);
+	UFUNCTION()
+	void CooldownOver();
 
 	int currentPoint = -1;
 	void NextPoint();

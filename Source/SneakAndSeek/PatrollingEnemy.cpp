@@ -25,6 +25,7 @@ void APatrollingEnemy::BeginPlay()
 
 	DetectionArea->OnComponentBeginOverlap.AddDynamic(this, &APatrollingEnemy::OnOverlapBegin);
 	DetectionArea->OnComponentEndOverlap.AddDynamic(this, &APatrollingEnemy::OnOverlapEnd);
+	EnemyMesh->OnComponentHit.AddDynamic(this, &APatrollingEnemy::OnHit);
 
 	State = EPatrollingEnemyState::Patrolling;
 
@@ -62,7 +63,14 @@ void APatrollingEnemy::Tick(float DeltaTime)
 		break;
 
 	case EPatrollingEnemyState::Cooldown:
-		/* code */
+		if (!PatrolPoints.IsEmpty())
+		{
+			CurrentTarget = PatrolPoints[currentPoint];
+			if ((CurrentTarget->GetActorLocation() - GetActorLocation()).Size() < 50)
+				NextPoint();
+		} else {
+			CurrentTarget = nullptr;
+		}
 		break;
 
 	default:
@@ -91,9 +99,23 @@ void APatrollingEnemy::OnOverlapBegin(UPrimitiveComponent *OverlappedComp, AActo
 void APatrollingEnemy::OnOverlapEnd(UPrimitiveComponent *OverlappedComp, AActor *OtherActor, UPrimitiveComponent *OtherComp, int32 OtherBodyIndex)
 {
 	if (OtherActor == PlayerActor)
-	{
 		PlayerActor = nullptr;
+}
+
+void APatrollingEnemy::OnHit(UPrimitiveComponent *HitComponent, AActor *OtherActor, UPrimitiveComponent *OtherComp, FVector normalImpulse, const FHitResult &Hit)
+{
+	if (APlayerCharacter *PlayerCharacter = Cast<APlayerCharacter>(OtherActor))
+	{
+		UE_LOG(LogTemp, Display, TEXT("PLAYER"));
+		FTimerHandle handle;
+		State = EPatrollingEnemyState::Cooldown;
+		GetWorld()->GetTimerManager().SetTimer(handle, this, &APatrollingEnemy::CooldownOver, Cooldown, false);
 	}
+}
+
+void APatrollingEnemy::CooldownOver()
+{
+	State = EPatrollingEnemyState::Patrolling;
 }
 
 void APatrollingEnemy::NextPoint()
