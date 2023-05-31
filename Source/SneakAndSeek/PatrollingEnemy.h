@@ -4,14 +4,17 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "EPatrollingEnemyState.h"
 #include "PatrollingEnemy.generated.h"
+
+class USphereComponent;
 
 UCLASS()
 class SNEAKANDSEEK_API APatrollingEnemy : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	// Sets default values for this actor's properties
 	APatrollingEnemy();
 
@@ -21,23 +24,31 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UStaticMeshComponent *EnemyMesh;
+	UPROPERTY(VisibleAnywhere, Category = "Components")
+	USphereComponent *DetectionArea;
 
-	UPROPERTY(EditAnywhere, Category = "PatrolPoints")
-	TArray<AActor*> PatrolPoints;
+	UPROPERTY(EditAnywhere)
+	TArray<AActor *> PatrolPoints;
 
-	UPROPERTY(EditAnywhere, Category = "Movement")
+	UPROPERTY(EditAnywhere)
 	float Speed;
 
-public:	
+	UPROPERTY(EditAnywhere)
+	TEnumAsByte<EPatrollingEnemyState> State;
+
+public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 private:
-
+	UFUNCTION()
+	void OnOverlapBegin(UPrimitiveComponent *OverlappedComp, AActor *OtherActor, UPrimitiveComponent *OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult &SweepResult);
+	UFUNCTION()
+	void OnOverlapEnd(UPrimitiveComponent *OverlappedComp, AActor *OtherActor, UPrimitiveComponent *OtherComp, int32 OtherBodyIndex);
 
 	int currentPoint = -1;
-
 	void NextPoint();
+	AActor *PlayerActor;
 
-	bool HasReachedTarget();
+	bool isPLayerInArea();
 };

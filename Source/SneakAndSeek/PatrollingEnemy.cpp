@@ -1,6 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "PatrollingEnemy.h"
+#include "PlayerCharacter.h"
+#include "Components/SphereComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
 APatrollingEnemy::APatrollingEnemy()
@@ -9,13 +12,22 @@ APatrollingEnemy::APatrollingEnemy()
 	PrimaryActorTick.bCanEverTick = true;
 
 	EnemyMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("EnemyMesh"));
-	EnemyMesh->SetupAttachment(RootComponent);
+	RootComponent = EnemyMesh;
+
+	DetectionArea = CreateDefaultSubobject<USphereComponent>(TEXT("DetectionArea"));
+	DetectionArea->SetupAttachment(RootComponent);
 }
 
 // Called when the game starts or when spawned
 void APatrollingEnemy::BeginPlay()
 {
 	Super::BeginPlay();
+
+	DetectionArea->OnComponentBeginOverlap.AddDynamic(this, &APatrollingEnemy::OnOverlapBegin);
+	DetectionArea->OnComponentEndOverlap.AddDynamic(this, &APatrollingEnemy::OnOverlapEnd);
+
+	State = EPatrollingEnemyState::Patrolling;
+
 	NextPoint();
 }
 
@@ -24,31 +36,76 @@ void APatrollingEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (!PatrolPoints.IsEmpty())
+	switch (State)
 	{
-		FVector Direction = PatrolPoints[currentPoint]->GetActorLocation() - GetActorLocation();
-		if (Direction.Size() < 50)
+	case EPatrollingEnemyState::Patrolling:
+		if (isPLayerInArea())
 		{
-			NextPoint();
+			State = EPatrollingEnemyState::Chasing;
+			break;
 		}
-		Direction.Normalize();
-		SetActorLocation(GetActorLocation() + (Direction * Speed * DeltaTime));
+		if (!PatrolPoints.IsEmpty())
+		{
+			FVector Direction = PatrolPoints[currentPoint]->GetActorLocation() - GetActorLocation();
+			if (Direction.Size() < 50)
+				NextPoint();
+			Direction.Normalize();
+			SetActorLocation(GetActorLocation() + (Direction * Speed * DeltaTime));
+		}
+		break;
+
+	case EPatrollingEnemyState::Chasing:
+		if (!isPLayerInArea())
+		{
+			State = EPatrollingEnemyState::Patrolling;
+			break;
+		}
+
+		
+		break;
+
+	case EPatrollingEnemyState::Cooldown:
+		/* code */
+		break;
+
+	default:
+		break;
+	}
+
+	if (isPLayerInArea())
+	{
+		// change state
+	}
+}
+
+void APatrollingEnemy::OnOverlapBegin(UPrimitiveComponent *OverlappedComp, AActor *OtherActor, UPrimitiveComponent *OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult &SweepResult)
+{
+	if (OtherActor->IsA(APlayerCharacter::StaticClass()))
+		PlayerActor = OtherActor;
+}
+
+void APatrollingEnemy::OnOverlapEnd(UPrimitiveComponent *OverlappedComp, AActor *OtherActor, UPrimitiveComponent *OtherComp, int32 OtherBodyIndex)
+{
+	if (OtherActor == PlayerActor)
+	{
+		PlayerActor = nullptr;
 	}
 }
 
 void APatrollingEnemy::NextPoint()
 {
 	if (currentPoint < 0 || currentPoint >= PatrolPoints.Num() - 1)
-	{
 		currentPoint = 0;
-	}
 	else
-	{
 		currentPoint++;
-	}
 }
 
-bool APatrollingEnemy::HasReachedTarget()
+bool APatrollingEnemy::isPLayerInArea()
 {
+	if (PlayerActor)
+	{
+		FVector Direction = UKismetMathLibrary::GetDirectionUnitVector(GetActorLocation(), PlayerActor->GetActorLocation());
+		return UKismetMathLibrary::DegAcos(FVector::DotProduct(Direction, GetActorForwardVector())) <= 45;
+	}
 	return false;
 }
