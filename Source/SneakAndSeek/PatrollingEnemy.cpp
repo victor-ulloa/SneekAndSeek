@@ -3,6 +3,7 @@
 #include "PatrollingEnemy.h"
 #include "PlayerCharacter.h"
 #include "Components/SphereComponent.h"
+#include "Components/BoxComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
@@ -16,6 +17,9 @@ APatrollingEnemy::APatrollingEnemy()
 
 	DetectionArea = CreateDefaultSubobject<USphereComponent>(TEXT("DetectionArea"));
 	DetectionArea->SetupAttachment(RootComponent);
+
+	TopHitbox = CreateDefaultSubobject<UBoxComponent>(TEXT("TopHitbox"));
+	TopHitbox->SetupAttachment(RootComponent);
 }
 
 // Called when the game starts or when spawned
@@ -25,6 +29,8 @@ void APatrollingEnemy::BeginPlay()
 
 	DetectionArea->OnComponentBeginOverlap.AddDynamic(this, &APatrollingEnemy::OnOverlapBegin);
 	DetectionArea->OnComponentEndOverlap.AddDynamic(this, &APatrollingEnemy::OnOverlapEnd);
+	TopHitbox->OnComponentBeginOverlap.AddDynamic(this, &APatrollingEnemy::OnOverlapBeginHitBox);
+	TopHitbox->OnComponentEndOverlap.AddDynamic(this, &APatrollingEnemy::OnOverlapEndHitBox);
 	EnemyMesh->OnComponentHit.AddDynamic(this, &APatrollingEnemy::OnHit);
 
 	State = EPatrollingEnemyState::Patrolling;
@@ -40,7 +46,7 @@ void APatrollingEnemy::Tick(float DeltaTime)
 	switch (State)
 	{
 	case EPatrollingEnemyState::Patrolling:
-		if (isPLayerInArea())
+		if (isPlayerInArea())
 		{
 			State = EPatrollingEnemyState::Chasing;
 			break;
@@ -54,7 +60,7 @@ void APatrollingEnemy::Tick(float DeltaTime)
 		break;
 
 	case EPatrollingEnemyState::Chasing:
-		if (!isPLayerInArea())
+		if (!isPlayerInArea())
 		{
 			State = EPatrollingEnemyState::Patrolling;
 			break;
@@ -83,10 +89,10 @@ void APatrollingEnemy::Tick(float DeltaTime)
 		Direction.Normalize();
 		SetActorLocation(GetActorLocation() + (Direction * Speed * DeltaTime));
 
+		Direction.Z= 0;
 		FRotator PlayerRot = FRotationMatrix::MakeFromX(Direction).Rotator();
-		SetActorRotation(PlayerRot);
-		// TODO: FIX ROTATION SPEED
-		// SetActorRotation(PlayerRot * RotationSpeed * DeltaTime);
+
+		SetActorRotation(FMath::Lerp(GetActorRotation(), PlayerRot, RotationSpeed * DeltaTime));
 	}
 }
 
@@ -106,7 +112,12 @@ void APatrollingEnemy::OnHit(UPrimitiveComponent *HitComponent, AActor *OtherAct
 {
 	if (APlayerCharacter *PlayerCharacter = Cast<APlayerCharacter>(OtherActor))
 	{
-		UE_LOG(LogTemp, Display, TEXT("PLAYER"));
+		if (isOnTop)
+		{
+			PlayerCharacter->Jump();
+			Destroy();
+			return;
+		}
 		FTimerHandle handle;
 		State = EPatrollingEnemyState::Cooldown;
 		GetWorld()->GetTimerManager().SetTimer(handle, this, &APatrollingEnemy::CooldownOver, Cooldown, false);
@@ -126,7 +137,7 @@ void APatrollingEnemy::NextPoint()
 		currentPoint++;
 }
 
-bool APatrollingEnemy::isPLayerInArea()
+bool APatrollingEnemy::isPlayerInArea()
 {
 	if (PlayerActor)
 	{
@@ -134,4 +145,16 @@ bool APatrollingEnemy::isPLayerInArea()
 		return UKismetMathLibrary::DegAcos(FVector::DotProduct(Direction, GetActorForwardVector())) <= 45;
 	}
 	return false;
+}
+
+void APatrollingEnemy::OnOverlapBeginHitBox(UPrimitiveComponent *OverlappedComp, AActor *OtherActor, UPrimitiveComponent *OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult &SweepResult)
+{
+	if (OtherActor->IsA(APlayerCharacter::StaticClass()))
+		isOnTop = true;
+}
+
+void APatrollingEnemy::OnOverlapEndHitBox(UPrimitiveComponent *OverlappedComp, AActor *OtherActor, UPrimitiveComponent *OtherComp, int32 OtherBodyIndex)
+{
+	if (OtherActor->IsA(APlayerCharacter::StaticClass()))
+		isOnTop = false;
 }

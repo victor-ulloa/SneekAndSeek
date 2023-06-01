@@ -31,6 +31,11 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent *PlayerInputCom
 	}
 }
 
+void APlayerCharacter::OnHit(UPrimitiveComponent *HitComponent, AActor *OtherActor, UPrimitiveComponent *OtherComp, FVector normalImpulse, const FHitResult &Hit)
+{
+	
+}
+
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
@@ -43,6 +48,8 @@ void APlayerCharacter::BeginPlay()
 			Subsystem->AddMappingContext(CharacterMappingContext, 0);
 		}
 	}
+
+	GetMesh()->OnComponentHit.AddDynamic(this, &APlayerCharacter::OnHit);
 }
 
 void APlayerCharacter::Tick(float DeltaTime)

@@ -8,6 +8,7 @@
 #include "PatrollingEnemy.generated.h"
 
 class USphereComponent;
+class UBoxComponent;
 
 UCLASS()
 class SNEAKANDSEEK_API APatrollingEnemy : public AActor
@@ -26,6 +27,8 @@ protected:
 	UStaticMeshComponent *EnemyMesh;
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	USphereComponent *DetectionArea;
+	UPROPERTY(VisibleAnywhere, Category = "Components")
+	UBoxComponent *TopHitbox;
 
 	UPROPERTY(EditAnywhere)
 	TArray<AActor *> PatrolPoints;
@@ -54,10 +57,16 @@ private:
 	UFUNCTION()
 	void CooldownOver();
 
+	UFUNCTION()
+	void OnOverlapBeginHitBox(UPrimitiveComponent *OverlappedComp, AActor *OtherActor, UPrimitiveComponent *OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult &SweepResult);
+	UFUNCTION()
+	void OnOverlapEndHitBox(UPrimitiveComponent *OverlappedComp, AActor *OtherActor, UPrimitiveComponent *OtherComp, int32 OtherBodyIndex);
+
+	bool isOnTop;
 	int currentPoint = -1;
 	void NextPoint();
 	AActor *PlayerActor;
 	AActor *CurrentTarget;
 
-	bool isPLayerInArea();
+	bool isPlayerInArea();
 };
