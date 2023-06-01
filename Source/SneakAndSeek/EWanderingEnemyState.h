@@ -2,15 +2,15 @@
 
 #pragma once
 
-#include "EPatrollingEnemyState.generated.h"
+#include "EWanderingEnemyState.generated.h"
 
 /**
  *
  */
 UENUM(BlueprintType)
-enum EPatrollingEnemyState
+enum EWanderingEnemyState
 {
-     Patrolling     UMETA(DisplayName = "Patrolling"),
+     Wandering     UMETA(DisplayName = "Patrolling"),
      Chasing        UMETA(DisplayName = "Chasing"),
      Cooldown       UMETA(DisplayName = "Cooldown"),
 };

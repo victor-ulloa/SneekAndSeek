@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "EPatrollingEnemyState.h"
+
 #include "PatrollingEnemy.generated.h"
 
 class USphereComponent;
@@ -16,19 +16,13 @@ class SNEAKANDSEEK_API APatrollingEnemy : public AActor
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this actor's properties
 	APatrollingEnemy();
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UStaticMeshComponent *EnemyMesh;
-	UPROPERTY(VisibleAnywhere, Category = "Components")
-	USphereComponent *DetectionArea;
-	UPROPERTY(VisibleAnywhere, Category = "Components")
-	UBoxComponent *TopHitbox;
 
 	UPROPERTY(EditAnywhere)
 	TArray<AActor *> PatrolPoints;
@@ -40,33 +34,16 @@ protected:
 	UPROPERTY(EditAnywhere)
 	float Cooldown;
 
-	UPROPERTY(EditAnywhere)
-	TEnumAsByte<EPatrollingEnemyState> State;
-
 public:
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 private:
 	UFUNCTION()
-	void OnOverlapBegin(UPrimitiveComponent *OverlappedComp, AActor *OtherActor, UPrimitiveComponent *OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult &SweepResult);
-	UFUNCTION()
-	void OnOverlapEnd(UPrimitiveComponent *OverlappedComp, AActor *OtherActor, UPrimitiveComponent *OtherComp, int32 OtherBodyIndex);
-	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector normalImpulse, const FHitResult& Hit);
-	UFUNCTION()
-	void CooldownOver();
-
-	UFUNCTION()
-	void OnOverlapBeginHitBox(UPrimitiveComponent *OverlappedComp, AActor *OtherActor, UPrimitiveComponent *OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult &SweepResult);
-	UFUNCTION()
-	void OnOverlapEndHitBox(UPrimitiveComponent *OverlappedComp, AActor *OtherActor, UPrimitiveComponent *OtherComp, int32 OtherBodyIndex);
 
 	bool isOnTop;
 	int currentPoint = -1;
 	void NextPoint();
-	AActor *PlayerActor;
 	AActor *CurrentTarget;
 
-	bool isPlayerInArea();
 };
