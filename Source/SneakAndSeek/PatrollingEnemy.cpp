@@ -55,6 +55,7 @@ void APatrollingEnemy::OnHit(UPrimitiveComponent *HitComponent, AActor *OtherAct
 		FVector Direction = PlayerCharacter->GetActorLocation() - GetActorLocation();
 		Direction.Normalize();
 		PlayerCharacter->GetCharacterMovement()->AddImpulse(Direction * 50000);
+		PlayerCharacter->SetHealth(PlayerCharacter->GetHealth() - 1);
 	}
 	Algo::Reverse(PatrolPoints);
 	NextPoint();

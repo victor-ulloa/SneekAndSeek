@@ -57,6 +57,11 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent *PlayerInputComponent) override;
 
+	UFUNCTION()
+	void SetHealth(float NewHealth);
+	UFUNCTION()
+	float GetHealth();
+
 private:
 	UPROPERTY(EditAnywhere, Category = "Movement")
 	float Acceleration = 200.f;
@@ -66,6 +71,8 @@ private:
 	float SprintMultiplier = 1.2f;
 	UPROPERTY(EditAnywhere, Category = "Movement")
 	float TurnRate = 200.f;
+	UPROPERTY(EditAnywhere, Category = "Health")
+	float HealthPoints;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
 	float ForwardValue;

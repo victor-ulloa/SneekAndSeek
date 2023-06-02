@@ -31,9 +31,23 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent *PlayerInputCom
 	}
 }
 
+void APlayerCharacter::SetHealth(float NewHealth)
+{
+	if (NewHealth <= 0)
+	{
+		UGameplayStatics::OpenLevel(this, FName(*GetWorld()->GetName()), false);
+		return;
+	}
+	HealthPoints = NewHealth;
+}
+
+float APlayerCharacter::GetHealth()
+{
+	return HealthPoints;
+}
+
 void APlayerCharacter::OnHit(UPrimitiveComponent *HitComponent, AActor *OtherActor, UPrimitiveComponent *OtherComp, FVector normalImpulse, const FHitResult &Hit)
 {
-	
 }
 
 void APlayerCharacter::BeginPlay()
@@ -64,7 +78,6 @@ void APlayerCharacter::Move(const FInputActionValue &Value)
 	{
 		AddMovementInput(GetActorForwardVector(), DirectionalValue.Y * 100);
 		AddMovementInput(GetActorRightVector(), DirectionalValue.X * 100);
-
 	}
 }
 

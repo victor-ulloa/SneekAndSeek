@@ -115,6 +115,7 @@ void AWanderingEnemy::OnHit(UPrimitiveComponent *HitComponent, AActor *OtherActo
 			return;
 		}
 		NextPoint();
+		PlayerCharacter->SetHealth(PlayerCharacter->GetHealth() - 1);
 		FTimerHandle handle;
 		State = EWanderingEnemyState::Cooldown;
 		GetWorld()->GetTimerManager().SetTimer(handle, this, &AWanderingEnemy::CooldownOver, Cooldown, false);
