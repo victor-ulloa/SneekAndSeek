@@ -41,7 +41,6 @@ private:
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector normalImpulse, const FHitResult& Hit);
 
-	bool isOnTop;
 	int currentPoint = -1;
 	void NextPoint();
 	AActor *CurrentTarget;

@@ -5,6 +5,8 @@
 #include "Components/SphereComponent.h"
 #include "Components/BoxComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "Algo/Reverse.h"
 
 APatrollingEnemy::APatrollingEnemy()
 {
@@ -50,13 +52,12 @@ void APatrollingEnemy::OnHit(UPrimitiveComponent *HitComponent, AActor *OtherAct
 {
 	if (APlayerCharacter *PlayerCharacter = Cast<APlayerCharacter>(OtherActor))
 	{
-		if (isOnTop)
-		{
-			PlayerCharacter->Jump();
-			Destroy();
-			return;
-		}
+		FVector Direction = PlayerCharacter->GetActorLocation() - GetActorLocation();
+		Direction.Normalize();
+		PlayerCharacter->GetCharacterMovement()->AddImpulse(Direction * 50000);
 	}
+	Algo::Reverse(PatrolPoints);
+	NextPoint();
 }
 
 void APatrollingEnemy::NextPoint()

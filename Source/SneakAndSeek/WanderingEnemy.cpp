@@ -75,6 +75,7 @@ void AWanderingEnemy::Tick(float DeltaTime)
 
 	if (CurrentTargetLocation != GetActorLocation())
 	{
+		CurrentTargetLocation.Z = GetActorLocation().Z;
 		FVector Direction = CurrentTargetLocation - GetActorLocation();
 		Direction.Normalize();
 		SetActorLocation(GetActorLocation() + (Direction * Speed * DeltaTime));
